@@ -1,10 +1,17 @@
 # @salesblink/cli
 
+[![npm version](https://img.shields.io/npm/v/@salesblink/cli.svg)](https://www.npmjs.com/package/@salesblink/cli)
+[![npm downloads](https://img.shields.io/npm/dm/@salesblink/cli.svg)](https://www.npmjs.com/package/@salesblink/cli)
+[![CI](https://github.com/open-salesblink/cli/actions/workflows/ci.yml/badge.svg)](https://github.com/open-salesblink/cli/actions/workflows/ci.yml)
+[![GitHub release](https://img.shields.io/github/v/release/open-salesblink/cli)](https://github.com/open-salesblink/cli/releases/latest)
+[![node >=20](https://img.shields.io/node/v/@salesblink/cli.svg)](https://www.npmjs.com/package/@salesblink/cli)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Command-line interface for the [SalesBlink](https://salesblink.io) cold-email outreach platform. Wraps the SalesBlink Public API for use in terminals, scripts, CI/CD pipelines, and AI-assisted workflows.
 
 ## Installation
 
-### npm (recommended)
+### [npm](https://www.npmjs.com/package/@salesblink/cli) (recommended)
 
 ```bash
 npm install -g @salesblink/cli
@@ -18,7 +25,7 @@ npx @salesblink/cli sequences list
 
 ### Binary download
 
-Standalone binaries are attached to GitHub Releases once the repo is published:
+Standalone binaries for every release are available on [GitHub Releases](https://github.com/open-salesblink/cli/releases/latest):
 
 | Platform | Binary |
 |---|---|---|
