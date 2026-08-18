@@ -1,0 +1,7 @@
+node_modules/
+release/
+index-linux
+index-macos
+index-win.exe
+*.log
+.DS_Store

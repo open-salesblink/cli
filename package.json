@@ -1,0 +1,42 @@
+{
+  "name": "@salesblink/cli",
+  "version": "0.1.0",
+  "description": "CLI for the SalesBlink cold-email outreach platform",
+  "type": "module",
+  "bin": {
+    "salesblink": "./src/index.js"
+  },
+  "files": [
+    "src",
+    "README.md"
+  ],
+  "scripts": {
+    "start": "node src/index.js",
+    "check": "node --check src/index.js && for f in $(find src -name '*.js'); do node --check \"$f\" || exit 1; done",
+    "pkg": "pkg src/index.js --compress GZip",
+    "pkg:all": "pkg src/index.js --compress GZip -t node20-macos-arm64,node20-macos-x64,node20-linux-x64,node20-win-x64 --out-path release/",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/open-salesblink/cli.git"
+  },
+  "dependencies": {
+    "cli-table3": "^0.6.5",
+    "commander": "^12.1.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@yao-pkg/pkg": "^6.3.0"
+  },
+  "license": "MIT",
+  "bugs": "https://github.com/open-salesblink/cli/issues",
+  "homepage": "https://github.com/open-salesblink/cli#readme"
+}
