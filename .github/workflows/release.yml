@@ -1,0 +1,38 @@
+name: Build binaries
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+      - run: npm run check
+      - run: npm test
+
+      - name: Build standalone binaries
+        run: npm run pkg:all
+
+      - name: Rename binaries to match README
+        run: |
+          mv release/index-macos-arm64 release/salesblink-macos-arm64
+          mv release/index-macos-x64   release/salesblink-macos-x64
+          mv release/index-linux-x64   release/salesblink-linux-x64
+          mv release/index-win-x64.exe release/salesblink-win-x64.exe
+
+      - name: Create GitHub Release and attach binaries
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create "${GITHUB_REF_NAME}" --generate-notes release/salesblink-*
