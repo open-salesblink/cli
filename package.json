@@ -1,6 +1,6 @@
 {
   "name": "@salesblink/cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "CLI for the SalesBlink cold-email outreach platform",
   "type": "module",
   "bin": {
