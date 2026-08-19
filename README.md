@@ -28,7 +28,7 @@ npx @salesblink/cli sequences list
 Standalone binaries for every release are available on [GitHub Releases](https://github.com/open-salesblink/cli/releases/latest):
 
 | Platform | Binary |
-|---|---|---|
+|---|---|
 | macOS Apple Silicon | `salesblink-macos-arm64` |
 | macOS Intel | `salesblink-macos-x64` |
 | Linux x64 | `salesblink-linux-x64` |
