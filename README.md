@@ -63,6 +63,8 @@ The CLI resolves your API key in this order:
 
 The config file is stored at `~/.salesblink/config.json` with `0600` permissions.
 
+When you set `api_key`, the CLI verifies it against the API and warns (exit code 2) if the key is rejected — the key is still saved so you can fix it later. Pass `--no-verify` to skip the check (e.g. when offline).
+
 > SalesBlink expects the **raw** key in the `Authorization` header (no `Bearer` prefix, no query param) — the CLI handles this for you.
 
 ```bash
@@ -126,6 +128,7 @@ Date options accept either a **Unix timestamp in milliseconds** or an **ISO 8601
 
 ```
 salesblink config set <key> <value>    Set a configuration value (api_key, base_url, format)
+                                      api_key is verified against the API; pass --no-verify to skip
 salesblink config get <key>            Get a configuration value
 salesblink config list                 Show all configuration values
 salesblink config clear                Clear all configuration

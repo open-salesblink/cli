@@ -42,8 +42,11 @@ test("commands requiring auth exit 2 with a helpful message when no key is set",
 test("config set/get/list/clear round-trips values", () => {
   const home = mkdtempSync(join(tmpdir(), "sb-cli-e2e-"));
 
-  const set = runCli(["config", "set", "api_key", "sb-e2e-test-key"], { home });
+  const set = runCli(["config", "set", "api_key", "sb-e2e-test-key", "--no-verify"], { home });
   assert.equal(set.status, 0);
+  assert.match(set.stderr, /Set api_key \*\*\*\*-key/);
+  assert.match(set.stderr, /saved to ~\/\.salesblink\/config\.json/);
+  assert.doesNotMatch(set.stderr, /sb-e2e-test-key/);
 
   const get = runCli(["config", "get", "api_key"], { home });
   assert.equal(get.status, 0);
@@ -63,13 +66,27 @@ test("config set/get/list/clear round-trips values", () => {
 
 test("config file is written with owner-only (0600) permissions", () => {
   const home = mkdtempSync(join(tmpdir(), "sb-cli-e2e-"));
-  const { status } = runCli(["config", "set", "api_key", "sb-perms-check"], { home });
+  const { status } = runCli(["config", "set", "api_key", "sb-perms-check", "--no-verify"], { home });
   assert.equal(status, 0);
 
   const configPath = join(home, ".salesblink", "config.json");
   const mode = statSync(configPath).mode & 0o777;
   assert.equal(mode, 0o600);
   assert.deepEqual(JSON.parse(readFileSync(configPath, "utf8")), { api_key: "sb-perms-check" });
+});
+
+test("config set api_key --no-verify masks the key and skips the network check", () => {
+  const { status, stderr } = runCli(["config", "set", "api_key", "sb-secret-key-1234", "--no-verify"]);
+  assert.equal(status, 0);
+  assert.match(stderr, /Set api_key \*\*\*\*1234/);
+  assert.doesNotMatch(stderr, /sb-secret-key-1234/);
+});
+
+test("config set of a non-secret key echoes the value", () => {
+  const { status, stderr } = runCli(["config", "set", "format", "json"]);
+  assert.equal(status, 0);
+  assert.match(stderr, /Set format = json/);
+  assert.match(stderr, /saved to ~\/\.salesblink\/config\.json/);
 });
 
 test("invalid request bodies are rejected client-side with exit 1 (no network call)", () => {
