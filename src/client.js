@@ -17,7 +17,7 @@ export class CliError extends Error {
   }
 }
 
-export function maskApiKey(key) {
+function maskApiKey(key) {
   if (key.length <= 4) return "****";
   return "****" + key.slice(-4);
 }
