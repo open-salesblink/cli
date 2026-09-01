@@ -2,7 +2,10 @@ import { z } from "zod";
 import { Envelope, AnyEnvelope } from "./validate.js";
 
 export const FolderCreateBody = z
-  .object({ name: z.string(), type: z.enum(["email-sender"]) })
+  .object({
+    name: z.string(),
+    type: z.enum(["email-sender"]).optional(),
+  })
   .passthrough();
 
 export const FolderSchema = z

@@ -53,7 +53,7 @@ To view the full API response, append --format json to your command.
     .description("Create a list")
     .usage("[--name <name>] [--folder <folder>] [--starred] [--verification] [--archive-invalid] [--archive-risky] | --from-json <path>")
     .option("--name <name>", "List name")
-    .option("--folder <folder>", "Folder")
+    .option("--folder <folder>", "General folder ID (a folder created without --type, not an email-sender folder)")
     .option("--starred", "Star the list")
     .option("--verification", "Enable verification")
     .option("--archive-invalid", "Archive invalid emails")
@@ -75,9 +75,10 @@ To view the full API response, append --format json to your command.
 
   cmd.command("update")
     .description("Update a list")
-    .usage("--id <id> [--name <name>] [--starred <bool>] [--verification <bool>] [--archive-invalid <bool>] [--archive-risky <bool>] [--duplicate-removal <bool>] [--duplicate-removal-other-list <bool>] [--duplicate-removal-team-list <bool>] | --from-json <path>")
+    .usage("--id <id> [--name <name>] [--folder <folder-id>] [--starred <bool>] [--verification <bool>] [--archive-invalid <bool>] [--archive-risky <bool>] [--duplicate-removal <bool>] [--duplicate-removal-other-list <bool>] [--duplicate-removal-team-list <bool>] | --from-json <path>")
     .requiredOption("--id <id>", "List ID")
     .option("--name <name>", "List name")
+    .option("--folder <folder-id>", "General folder ID to move the list into (a folder created without --type, not an email-sender folder)")
     .option("--starred <bool>", "Starred (true/false)")
     .option("--verification <bool>", "Verification (true/false)")
     .option("--archive-invalid <bool>", "Archive invalid (true/false)")
@@ -86,13 +87,13 @@ To view the full API response, append --format json to your command.
     .option("--duplicate-removal-other-list <bool>", "Duplicate removal across your lists (true/false)")
     .option("--duplicate-removal-team-list <bool>", "Duplicate removal across team lists (true/false)")
     .option("--from-json <path>", "Read request body from JSON file")
-    .addHelpText("after", `\nExamples:\n  salesblink lists update --id <id> --name <name>\n  salesblink lists update --id <id> --from-json <path>\n\nJSON file (--from-json):\n  {\n    "name": "string",\n    "starred": true,\n    "verification": true,\n    "archive_invalid": true,\n    "archive_risky": true,\n    "duplicate_removal": true,\n    "duplicate_removal_other_list": true,\n    "duplicate_removal_team_list": true\n  }\n\nNote: --from-json accepts the full request body and overrides other flags.\n`)
+    .addHelpText("after", `\nExamples:\n  salesblink lists update --id <id> --name <name>\n  salesblink lists update --id <id> --folder <folder-id>\n  salesblink lists update --id <id> --from-json <path>\n\nJSON file (--from-json):\n  {\n    "name": "string",\n    "folder": "folder_uuid",\n    "starred": true,\n    "verification": true,\n    "archive_invalid": true,\n    "archive_risky": true,\n    "duplicate_removal": true,\n    "duplicate_removal_other_list": true,\n    "duplicate_removal_team_list": true\n  }\n\nNote: --from-json accepts the full request body and overrides other flags.\n`)
     .action(async (opts) => {
       const client = makeClient(program);
       const raw = opts.fromJson
         ? loadJson(opts.fromJson)
         : pick({
-            name: opts.name, starred: boolOpt(opts.starred), verification: boolOpt(opts.verification),
+            name: opts.name, folder: opts.folder, starred: boolOpt(opts.starred), verification: boolOpt(opts.verification),
             archive_invalid: boolOpt(opts.archiveInvalid), archive_risky: boolOpt(opts.archiveRisky),
             duplicate_removal: boolOpt(opts.duplicateRemoval), duplicate_removal_other_list: boolOpt(opts.duplicateRemovalOtherList),
             duplicate_removal_team_list: boolOpt(opts.duplicateRemovalTeamList),

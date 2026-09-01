@@ -60,10 +60,11 @@ To view the full API response, append --format json to your command.
 
   cmd.command("create")
     .description("Create a sequence")
-    .usage("[--name <name>] [--senders <ids>] [--list-id <ids>] [--from-json <steps-path>] [options]")
+    .usage("[--name <name>] [--senders <ids>] [--list-id <ids>] [--folder <folder>] [--from-json <steps-path>] [options]")
     .option("--name <name>", "Sequence name")
     .option("--senders <ids>", "Comma-separated sender IDs or folder IDs")
     .option("--list-id <ids>", "Comma-separated list IDs")
+    .option("--folder <folder>", "General folder ID to organize the sequence (must not be an email-sender folder)")
     .option("--paused <bool>", "Pause after creation (true/false). Default is true; pass false to schedule immediately")
     .option("--launch-timing-mode <mode>", "now | schedule")
     .option("--scheduled-at <date>", "ISO 8601 start date when launch-timing-mode=schedule (converted to a Unix timestamp)")
@@ -83,6 +84,7 @@ Required (unless using --from-json for the full body):
   --from-json <path>         JSON file with the sequence steps (or full body)
 
 Common options:
+  --folder <folder>          General folder ID to organize the sequence (must not be an email-sender folder)
   --paused <bool>            Pause after creation. Default is true; pass false to schedule immediately and show leads.
   --launch-timing-mode <mode> now | schedule
   --scheduled-at <date>      ISO 8601 start date when mode=schedule (converted to a Unix timestamp)
@@ -95,7 +97,7 @@ Common options:
   --check-email-before-sending <bool>  Send to outbox for approval before sending
 
 Advanced options (use --from-json):
-  folder, starred, evergreen, bounceThreshold, bouncePause, autoPause, autoTagReplies,
+  starred, evergreen, bounceThreshold, bouncePause, autoPause, autoTagReplies,
   emailSendingHours, sendToOnlyVerifiedEmail, validEmail, riskyEmail, invalidEmail,
   checkEmailOpen, checkEmailClick, checkEmailReply, plainText, auto_reply, matchProvider,
   skip_esg, bcc
@@ -139,6 +141,7 @@ Note: The API creates sequences paused by default. Contacts are only scheduled a
         name: opts.name,
         senders: opts.senders,
         lists: csvArr(opts.listId),
+        folder: opts.folder,
         paused: boolOpt(opts.paused),
         launchTimingMode: opts.launchTimingMode,
         scheduledAt: opts.scheduledAt,
@@ -166,12 +169,13 @@ Note: The API creates sequences paused by default. Contacts are only scheduled a
 
   cmd.command("update")
     .description("Update sequence properties and state")
-    .usage("--id <id> [--paused <bool>] [--from-json <path>] [options]")
+    .usage("--id <id> [--paused <bool>] [--folder <folder>] [--from-json <path>] [options]")
     .requiredOption("--id <id>", "Sequence ID")
     .option("--paused <bool>", "Pause/resume (true/false)")
     .option("--name <name>", "Sequence name")
     .option("--senders <ids>", "Comma-separated sender IDs or folder IDs")
     .option("--list-id <ids>", "Comma-separated list IDs")
+    .option("--folder <folder>", "General folder ID to move the sequence into (omit or pass empty string to remove from folder)")
     .option("--launch-timing-mode <mode>", "now | schedule")
     .option("--scheduled-at <date>", "ISO 8601 start date when launch-timing-mode=schedule (converted to a Unix timestamp)")
     .option("--timezone <tz>", "IANA timezone")
@@ -191,6 +195,7 @@ Options:
   --name <name>              Sequence name
   --senders <ids>            Comma-separated sender IDs or folder IDs
   --list-id <ids>            Comma-separated list IDs
+  --folder <folder>          General folder ID to move the sequence into (omit or pass empty string to remove from folder)
   --launch-timing-mode <mode> now | schedule
   --scheduled-at <date>      ISO 8601 start date when mode=schedule (converted to a Unix timestamp)
   --timezone <tz>            IANA timezone
@@ -211,6 +216,7 @@ Note: --from-json loads the base request body. Any CLI flags you also pass will 
         name: opts.name,
         senders: opts.senders,
         lists: csvArr(opts.listId),
+        folder: opts.folder,
         paused: boolOpt(opts.paused),
         launchTimingMode: opts.launchTimingMode,
         scheduledAt: opts.scheduledAt,

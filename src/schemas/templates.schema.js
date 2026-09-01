@@ -17,6 +17,7 @@ export const TemplateUpdateBody = z
     name: z.string().optional(),
     subject_line: z.string().optional(),
     content: z.string().optional(),
+    folder: z.string().optional(),
     starred: z.boolean().optional(),
     attachments: z.array(z.unknown()).optional(),
     remove_attachments: z.array(z.unknown()).optional(),

@@ -1,37 +1,6 @@
 import { z } from "zod";
 import { Envelope, AnyEnvelope } from "./validate.js";
 
-export const SenderCreateBody = z
-  .object({
-    email: z.string().optional(),
-    from_email: z.string().optional(),
-    senderName: z.string().optional(),
-    from_name: z.string().optional(),
-    smtpHost: z.string().optional(),
-    smtp_host: z.string().optional(),
-    smtpPort: z.number().optional(),
-    smtp_port: z.number().optional(),
-    smtpUsername: z.string().optional(),
-    smtp_username: z.string().optional(),
-    smtpPassword: z.string().optional(),
-    smtp_password: z.string().optional(),
-    password: z.string().optional(),
-    imapHost: z.string().optional(),
-    imap_host: z.string().optional(),
-    imapPort: z.number().optional(),
-    imap_port: z.number().optional(),
-    imapUsername: z.string().optional(),
-    imap_username: z.string().optional(),
-    imapPassword: z.string().optional(),
-    imap_password: z.string().optional(),
-    folder: z.string().optional(),
-  })
-  .passthrough();
-
-export const SenderBulkBody = z
-  .object({ senders: z.array(z.object({}).passthrough()).optional() })
-  .passthrough();
-
 export const SenderUpdateBody = z
   .object({
     warmup_enabled: z.boolean().optional(),
@@ -59,6 +28,7 @@ export const SenderUpdateBody = z
     dkim_identifier: z.string().optional(),
     use_custom_tracking_domain: z.boolean().optional(),
     tracking_domain: z.string().optional(),
+    folder: z.string().optional(),
   })
   .passthrough();
 
@@ -73,23 +43,12 @@ export const SenderSchema = z
     warmup_active: z.boolean().optional(),
     warmup_paused: z.boolean().optional(),
     owned_by: z.string().optional(),
+    folder: z.string().optional(),
+    folderName: z.string().optional(),
   })
   .passthrough();
 
-export const SendersListResponse = Envelope(
-  z.array(
-    z
-      .object({
-        folder: z
-          .object({ id: z.string().optional(), name: z.string().optional() })
-          .passthrough()
-          .nullable()
-          .optional(),
-        senders: z.array(SenderSchema).optional(),
-      })
-      .passthrough(),
-  ),
-);
+export const SendersListResponse = Envelope(z.array(SenderSchema).optional());
 export const SenderMutateResponse = AnyEnvelope;
 export const WarmupLinksResponse = AnyEnvelope;
 export const SenderHealthResponse = AnyEnvelope;

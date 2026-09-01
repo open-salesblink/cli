@@ -10,39 +10,46 @@ export function registerFoldersCommand(program) {
   const cmd = program.command("folders").description("Manage folders");
 
   cmd.command("list")
-    .description("Get all folders (the API currently returns only email-sender folders)")
-    .usage("[--search <q>] [--owned-by <email>]")
+    .description("Get all folders")
+    .usage("[--type <type>] [--search <q>] [--owned-by <email>]")
     .addHelpText("after", `
-Note: the public API returns only email-sender folders. The --type option is not supported because the API overwrites/ignores it.
+Filter by folder type:
+  --type email-sender  Email-sender folders only
+  --type general       General folders (lists, templates, sequences) only
+  --type all           All folders (default if omitted)
 
 To view the full API response, append --format json to your command.
 `)
+    .option("--type <type>", "Folder type filter: all, general, or email-sender")
     .option("--search <q>", "Search query")
     .option("--owned-by <email>", "Filter by owner email")
     .action(async (opts) => {
       const client = makeClient(program);
       const data = await client.request({
         path: "/folders",
-        params: { search: opts.search, owned_by: opts.ownedBy },
+        params: { type: opts.type, search: opts.search, owned_by: opts.ownedBy },
       });
       printData(validated(data, FoldersListResponse), resolveFormat(program));
     });
 
   cmd.command("create")
     .description("Create a folder")
-    .usage("--name <name>")
+    .usage("--name <name> [--type <type>]")
     .addHelpText("after", `
 Required:
   --name <name>    Folder name
 
-Note: the public API only accepts email-sender folders. The type is always email-sender.
+Optional:
+  --type <type>    Only include "email-sender" when creating a folder for email senders.
+                   For general folders (lists, templates, sequences), do not include --type.
 
 To view the full API response, append --format json to your command.
 `)
     .requiredOption("--name <name>", "Folder name")
+    .option("--type <type>", 'Folder type: "email-sender" or omitted for general')
     .action(async (opts) => {
       const client = makeClient(program);
-      const body = validateBody(pick({ name: opts.name, type: "email-sender" }), FolderCreateBody);
+      const body = validateBody(pick({ name: opts.name, type: opts.type }), FolderCreateBody);
       const data = await client.request({ method: "POST", path: "/folders", body });
       printData(validated(data, FolderCreateResponse), resolveFormat(program));
     });

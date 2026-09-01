@@ -101,14 +101,16 @@ Note: --from-json accepts the full request body and overrides other flags. Attac
 
   cmd.command("update")
     .description("Update a template")
-    .usage("--id <id> [--from-json <path>] [--starred <bool>] [--attachments <paths>] [--remove-attachments <names>]")
+    .usage("--id <id> [--from-json <path>] [--folder <folder>] [--starred <bool>] [--attachments <paths>] [--remove-attachments <names>]")
     .requiredOption("--id <id>", "Template ID")
     .option("--from-json <path>", "Read request body from JSON file")
+    .option("--folder <folder>", "General folder ID to move the template into (omit or pass empty string to remove from folder)")
     .option("--starred <bool>", "Starred (true/false)")
     .option("--attachments <paths>", "Comma-separated new file paths to attach (max 3 total including existing)", csvArr)
     .option("--remove-attachments <names>", "Comma-separated existing attachment names to remove", csvArr)
     .addHelpText("after", `
 Examples:
+  salesblink templates update --id <id> --folder <folder-id>
   salesblink templates update --id <id> --from-json <path>
   salesblink templates update --id <id> --attachments ./file.pdf --remove-attachments old.pdf
 
@@ -117,6 +119,7 @@ JSON file (--from-json):
     "name": "string",
     "subject_line": "string",
     "content": "<p>Hello</p>",
+    "folder": "string",
     "starred": true
   }
 
@@ -125,6 +128,9 @@ Note: --from-json accepts the full request body and overrides other flags. Attac
     .action(async (opts) => {
       const client = makeClient(program);
       let raw = opts.fromJson ? loadJson(opts.fromJson) : {};
+      if (opts.folder !== undefined && !opts.fromJson) {
+        raw.folder = opts.folder;
+      }
       if (opts.starred !== undefined && !opts.fromJson) {
           raw.starred = boolOpt(opts.starred);
       }
