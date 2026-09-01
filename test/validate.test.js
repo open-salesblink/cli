@@ -37,22 +37,20 @@ test("OkResponseSchema tolerates any extra fields", () => {
   assert.deepEqual(parsed.extra, [1, 2]);
 });
 
-test("ContactsAddBody normalizes snake_case contact fields to API casing", () => {
+test("ContactsAddBody keeps snake_case contact fields", () => {
   const body = validateBody(
-    { list_id: "l1", contacts: [{ email: "a@b.co", first_name: "Ada", company: "Acme" }] },
+    { list_id: "l1", contacts: [{ email: "a@b.co", first_name: "Ada", company_name: "Acme" }] },
     ContactsAddBody,
   );
   const contact = body.contacts[0];
-  assert.equal(contact.Email, "a@b.co");
-  assert.equal(contact.First_Name, "Ada");
-  assert.equal(contact.Company_Name, "Acme");
-  assert.equal(contact.email, undefined);
-  assert.equal(contact.first_name, undefined);
+  assert.equal(contact.email, "a@b.co");
+  assert.equal(contact.first_name, "Ada");
+  assert.equal(contact.company_name, "Acme");
 });
 
-test("ContactsAddBody requires an Email on every contact", () => {
+test("ContactsAddBody requires an email on every contact", () => {
   assert.throws(
     () => validateBody({ list_id: "l1", contacts: [{ first_name: "NoEmail" }] }, ContactsAddBody),
-    /Each contact must have an Email field/,
+    /Each contact must have an email field/,
   );
 });

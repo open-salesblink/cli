@@ -17,6 +17,7 @@ export const ListCreateBody = z
 export const ListUpdateBody = z
   .object({
     name: z.string().optional(),
+    folder: z.string().optional(),
     starred: z.boolean().optional(),
     duplicate_removal: z.boolean().optional(),
     duplicate_removal_other_list: z.boolean().optional(),
@@ -29,55 +30,53 @@ export const ListUpdateBody = z
 
 export const ArchiveBody = z.object({ archived: z.boolean().optional() }).passthrough();
 
-export const LeadUpdateBody = z
-  .object({
-    First_Name: z.string().optional(),
-    Last_Name: z.string().optional(),
-    Email: z.string().optional(),
-    Phone: z.string().optional(),
-    Company: z.string().optional(),
-    Title: z.string().optional(),
-  })
-  .passthrough();
+const SNAKE_CASE_REGEX = /^[a-z][a-z0-9]*(_[a-z0-9]+)*$/;
+
+const snakeCaseOnly = (schema) =>
+  schema.superRefine((obj, ctx) => {
+    for (const key of Object.keys(obj)) {
+      if (!SNAKE_CASE_REGEX.test(key)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Invalid field "${key}": all field names must be snake_case (e.g. first_name, company_name, lead_score)`,
+          path: [key],
+        });
+      }
+    }
+  });
+
+export const LeadUpdateBody = snakeCaseOnly(
+  z
+    .object({
+      first_name: z.string().optional(),
+      last_name: z.string().optional(),
+      email: z.string().optional(),
+      phone: z.string().optional(),
+      company_name: z.string().optional(),
+      job_title: z.string().optional(),
+      starred: z.boolean().optional(),
+    })
+    .passthrough()
+);
 
 export const LeadMoveBody = z.object({ list_id: z.string() }).passthrough();
 
-const ContactInputSchema = z
-  .object({
-    Email: z.string().optional(),
-    email: z.string().optional(),
-    First_Name: z.string().optional(),
-    first_name: z.string().optional(),
-    Last_Name: z.string().optional(),
-    last_name: z.string().optional(),
-    Phone: z.string().optional(),
-    phone: z.string().optional(),
-    Company_Name: z.string().optional(),
-    company: z.string().optional(),
-    Title: z.string().optional(),
-    title: z.string().optional(),
-  })
-  .passthrough()
-  .transform((c) => {
-    const out = { ...c };
-    if (out.email !== undefined && out.Email === undefined) out.Email = out.email;
-    if (out.first_name !== undefined && out.First_Name === undefined) out.First_Name = out.first_name;
-    if (out.last_name !== undefined && out.Last_Name === undefined) out.Last_Name = out.last_name;
-    if (out.phone !== undefined && out.Phone === undefined) out.Phone = out.phone;
-    if (out.company !== undefined && out.Company_Name === undefined) out.Company_Name = out.company;
-    if (out.title !== undefined && out.Title === undefined) out.Title = out.title;
-    delete out.email;
-    delete out.first_name;
-    delete out.last_name;
-    delete out.phone;
-    delete out.company;
-    delete out.title;
-    return out;
-  })
-  .refine((c) => typeof c.Email === "string" && c.Email.length > 0, {
-    message: "Each contact must have an Email field",
-    path: ["Email"],
-  });
+const ContactInputSchema = snakeCaseOnly(
+  z
+    .object({
+      email: z.string().optional(),
+      first_name: z.string().optional(),
+      last_name: z.string().optional(),
+      phone: z.string().optional(),
+      company_name: z.string().optional(),
+      job_title: z.string().optional(),
+      starred: z.boolean().optional(),
+    })
+    .passthrough()
+).refine((c) => typeof c.email === "string" && c.email.length > 0, {
+  message: "Each contact must have an email field",
+  path: ["email"],
+});
 
 export const ContactsAddBody = z
   .object({
@@ -93,10 +92,10 @@ export const ContactsRemoveBody = z.object({ list_id: z.string(), email: z.strin
 export const ContactSchema = z
   .object({
     id: z.string().optional(),
-    Email: z.string().optional(),
-    First_Name: z.string().optional(),
-    Last_Name: z.string().optional(),
-    Phone: z.string().optional(),
+    email: z.string().optional(),
+    first_name: z.string().optional(),
+    last_name: z.string().optional(),
+    phone: z.string().optional(),
     list_id: z.string().optional(),
     owned_by: z.string().optional(),
     archived: z.boolean().optional(),
@@ -113,6 +112,7 @@ export const ListSchema = z
     archived: z.boolean().optional(),
     owned_by: z.string().optional(),
     last_modified: z.string().optional(),
+    fields: z.array(z.string()).optional(),
   })
   .passthrough();
 
