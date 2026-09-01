@@ -25,7 +25,7 @@ const program = new Command();
 program
   .name("salesblink")
   .description("CLI for the SalesBlink cold-email outreach platform")
-  .version("0.1.0")
+  .version("0.2.0")
   .option("--api-key <key>", "SalesBlink API key")
   .option("--base-url <url>", "Override API base URL")
   .option("--format <format>", "Output format: json, table, csv")
