@@ -5,3 +5,4 @@ index-macos
 index-win.exe
 *.log
 .DS_Store
+.playwright-mcp
