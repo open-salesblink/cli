@@ -1,15 +1,14 @@
 import { printData } from "../output.js";
-import { CliError } from "../client.js";
 import { validated, validateBody } from "../schemas/validate.js";
 
-import { makeClient, resolveFormat, loadJson, pick, boolOpt, csvArr } from "./_helpers.js";
+import { makeClient, resolveFormat, loadJson, pick, csvArr } from "./_helpers.js";
 import {
-  SenderCreateBody, SenderUpdateBody, SenderIdsBody,
+  SenderUpdateBody, SenderIdsBody,
   SendersListResponse, SenderMutateResponse, WarmupLinksResponse,
   SenderHealthResponse, SenderWarmupStatsResponse, SenderFetchMessagesResponse,
 
 } from "../schemas/senders.schema.js";
-import { OAuthInitBody, OpaqueResponse } from "../schemas/misc.schema.js";
+
 
 export function registerSendersCommand(program) {
   const cmd = program.command("senders").description("Manage email sender accounts");
@@ -20,7 +19,7 @@ export function registerSendersCommand(program) {
     .option("--limit <n>", "Page size", parseInt)
     .option("--skip <n>", "Offset", parseInt)
     .option("--search <q>", "Search query")
-    .option("--folder <id>", "Legacy folder UUID filter")
+    .option("--folder <id>", "Email-sender folder UUID filter")
     .option("--filter <string>", "Legacy filter string")
     .option("--owned-by <email>", "Filter by owner email")
     .action(async (opts) => {
@@ -36,77 +35,43 @@ export function registerSendersCommand(program) {
     });
 
   cmd.command("add")
-    .description("Add a single sender (SMTP/IMAP, Gmail OAuth, or Outlook OAuth)")
-    .usage("[--email <email>] | --from-json <path> | --google | --outlook")
-    .option("--email <email>", "Sender email (SMTP/IMAP only)")
-    .option("--from-json <path>", "Read request body from JSON file (recommended for SMTP/IMAP)")
-    .option("--google", "Generate a Google OAuth URL to connect a Gmail sender")
-    .option("--outlook", "Generate an Outlook OAuth URL to connect an Outlook sender")
+    .description("Get the email-sender connection login link")
+    .usage("[options]")
     .addHelpText("after", `
-Examples:
-  salesblink senders add --email <email>
-  salesblink senders add --from-json <path>
-  salesblink senders add --google
-  salesblink senders add --outlook
+The public sender endpoint returns a magic login link to the email-sender connection page in the SalesBlink web UI.
 
-For SMTP/IMAP, use --from-json:
-  {
-    "from_email": "string",
-    "password": "string",
-    "smtp_host": "string",
-    "smtp_port": 587,
-    "imap_host": "string",
-    "imap_port": 993,
-    "smtp_username": "string",
-    "smtp_password": "string"
-  }
-
-For Gmail or Outlook OAuth, use --google or --outlook. The CLI will print the full OAuth URL. Copy and paste that URL into your browser, authenticate, and the sender will be created in your SalesBlink account automatically.
-
-Note: --from-json accepts the full request body and overrides other flags.
+To view the full API response, append --format json to your command.
 `)
-    .action(async (opts) => {
+    .action(async () => {
       const client = makeClient(program);
-      if (opts.google || opts.outlook) {
-        const path = opts.google ? "/oauth/google" : "/oauth/outlook";
-        const body = validateBody({}, OAuthInitBody);
-        const data = await client.request({ method: "POST", path, body });
-        const parsed = validated(data, OpaqueResponse);
-        const url = parsed.data?.auth_url ?? parsed.data?.url ?? parsed.data;
-        process.stdout.write(`${url}\n`);
-        process.stderr.write(`\nCopy and paste the URL above into your browser and authenticate to connect this ${opts.google ? "Gmail" : "Outlook"} sender.\n`);
-        process.stderr.write("After authentication, the sender will be created in your SalesBlink account.\n");
-        return;
-      }
-      const raw = opts.fromJson ? loadJson(opts.fromJson) : pick({ email: opts.email });
-      const body = validateBody(raw, SenderCreateBody);
-      const data = await client.request({ method: "POST", path: "/senders", body });
-      printData(validated(data, SenderMutateResponse), resolveFormat(program));
+      const data = await client.request({ path: "/senders/connect-link" });
+      printData(data, resolveFormat(program));
     });
 
   cmd.command("bulk")
-    .description("Add senders in bulk via CSV multipart upload")
-    .usage("--file <path>")
-    .option("--file <path>", "CSV file with sender credentials (multipart upload)")
-    .addHelpText("after", `\nRequired:\n  --file <path>  CSV file with sender credentials\n\nThe CSV is uploaded as multipart/form-data with field name 'csvFile'.\n`)
-    .action(async (opts) => {
+    .description("Get the bulk sender upload login link")
+    .usage("[options]")
+    .addHelpText("after", `
+The public bulk sender endpoint returns a magic login link to the email-sender connection page in the SalesBlink web UI.
+
+To view the full API response, append --format json to your command.
+`)
+    .action(async () => {
       const client = makeClient(program);
-      if (!opts.file) {
-        throw new CliError("--file <path> is required");
-      }
-      const data = await client.request({ method: "POST", path: "/senders/bulk", file: { field: "csvFile", path: opts.file } });
-      printData(validated(data, SenderMutateResponse), resolveFormat(program));
+      const data = await client.request({ path: "/senders/bulk-connect-link" });
+      printData(data, resolveFormat(program));
     });
 
   cmd.command("update")
-    .description("Update a sender (warmup, tracking, signature, etc.)")
-    .usage("--id <id> [--from-json <path>]")
+    .description("Update a sender (warmup, tracking, signature, folder, etc.)")
+    .usage("--id <id> [--folder <folder-id>] [--from-json <path>]")
     .requiredOption("--id <id>", "Sender ID")
+    .option("--folder <folder-id>", "Email-sender folder ID to move the sender into (a folder created with --type email-sender). Pass an empty string to remove from folder.")
     .option("--from-json <path>", "Read request body from JSON file (recommended)")
-    .addHelpText("after", `\nExamples:\n  salesblink senders update --id <id> --from-json <path>\n\nJSON file (--from-json):\n  {\n    "warmupEnabled": true,\n    "warmup_limit": 40,\n    "signature": "<p>...</p>"\n  }\n\nNote: --from-json accepts the full request body and overrides other flags.\n`)
+    .addHelpText("after", `\nExamples:\n  salesblink senders update --id <id> --from-json <path>\n  salesblink senders update --id <id> --folder <folder-id>\n\nJSON file (--from-json):\n  {\n    "warmup_enabled": true,\n    "warmup_limit": 40,\n    "signature": "<p>...</p>",\n    "folder": "folder_uuid"\n  }\n\nUse the "folder" field to move an email sender into an email-sender folder, or pass an empty string to remove it from its current folder. Lists and other assets use general folders and cannot be placed in an email-sender folder.\n\nNote: --from-json accepts the full request body and overrides other flags.\n`)
     .action(async (opts) => {
       const client = makeClient(program);
-      const raw = opts.fromJson ? loadJson(opts.fromJson) : {};
+      const raw = opts.fromJson ? loadJson(opts.fromJson) : pick({ folder: opts.folder });
       const body = validateBody(raw, SenderUpdateBody);
       const data = await client.request({ method: "PATCH", path: `/senders/${opts.id}`, body });
       printData(validated(data, SenderMutateResponse), resolveFormat(program));

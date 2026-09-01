@@ -5,7 +5,7 @@ import { makeClient, resolveFormat, loadJson, pick, boolOpt, requireConfirm } fr
 import {
   UserCreateBody, UserUpdateBody, UsersListResponse, UserGetResponse, UserMutateResponse,
   WorkspaceCreateBody, WorkspaceUpdateBody, WorkspacesListResponse, WorkspaceMutateResponse,
-  KeyCreateBody, KeysListResponse, KeyMutateResponse,
+  KeysListResponse,
 } from "../schemas/admin.schema.js";
 
 export function registerUsersCommand(program) {
@@ -164,20 +164,17 @@ export function registerKeysCommand(program) {
     });
 
   cmd.command("create")
-    .description("Create an API key")
-    .usage("--name <name>")
+    .description("Get the API key management login link")
+    .usage("[options]")
     .addHelpText("after", `
-Required:
-  --name <name>    Key name
+The public API-key endpoint returns a magic login link to the API keys page in the SalesBlink web UI.
 
 To view the full API response, append --format json to your command.
 `)
-    .requiredOption("--name <name>", "Key name")
-    .action(async (opts) => {
+    .action(async () => {
       const client = makeClient(program);
-      const body = validateBody({ name: opts.name }, KeyCreateBody);
-      const data = await client.request({ method: "POST", path: "/keys", body });
-      printData(validated(data, KeyMutateResponse), resolveFormat(program));
+      const data = await client.request({ path: "/keys/create-link" });
+      printData(data, resolveFormat(program));
     });
 
   cmd.command("delete")
@@ -200,18 +197,20 @@ To view the full API response, append --format json to your command.
     });
 
   cmd.command("refresh")
-    .description("Refresh an API key")
+    .description("Get the API key refresh login link")
     .usage("--id <id>")
     .addHelpText("after", `
 Required:
   --id <id>      Key ID
+
+The public refresh endpoint returns a magic login link to the API keys page in the SalesBlink web UI.
 
 To view the full API response, append --format json to your command.
 `)
     .requiredOption("--id <id>", "Key ID")
     .action(async (opts) => {
       const client = makeClient(program);
-      const data = await client.request({ method: "POST", path: `/keys/${opts.id}/refresh` });
-      printData(validated(data, KeyMutateResponse), resolveFormat(program));
+      const data = await client.request({ path: `/keys/${opts.id}/refresh-link` });
+      printData(data, resolveFormat(program));
     });
 }

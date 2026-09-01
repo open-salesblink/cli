@@ -34,7 +34,6 @@ export const WorkspaceSchema = z.object({ id: z.string().optional(), name: z.str
 export const WorkspacesListResponse = Envelope(z.array(WorkspaceSchema));
 export const WorkspaceMutateResponse = AnyEnvelope;
 
-export const KeyCreateBody = z.object({ name: z.string() }).passthrough();
 export const KeySchema = z
   .object({
     id: z.string().optional(),

@@ -31,9 +31,9 @@ This CLI handles SalesBlink API keys. Please keep the following in mind:
 
 - **Never commit your API key.** Keys should only live in `~/.salesblink/config.json`, the `--api-key` flag, or your shell environment — never in source control or shared scripts.
 - **Config file permissions.** The CLI writes `~/.salesblink/config.json` with `0600` (owner-only) permissions and warns at runtime if the file becomes world-readable. Do not loosen these permissions.
-- **Shell history.** Passing `--api-key` (or `auth signup --password`) directly on the command line may record the secret in your shell history. Prefer `salesblink config set api_key <key>` in an interactive session, and configure your shell to ignore commands prefixed with a space (`HISTCONTROL=ignorespace` in bash, `setopt HIST_IGNORE_SPACE` in zsh) for extra safety.
+- **Shell history.** Passing `--api-key` directly on the command line may record the secret in your shell history. Prefer `salesblink config set api_key <key>` in an interactive session, and configure your shell to ignore commands prefixed with a space (`HISTCONTROL=ignorespace` in bash, `setopt HIST_IGNORE_SPACE` in zsh) for extra safety.
 - **Key masking.** The CLI masks API keys in error output (only the last 4 characters are shown). If you ever see a full key in CLI output, please report it as a security issue.
-- **Rotate compromised keys** immediately at <https://run.salesblink.io/account/integration/api> or via `salesblink keys refresh --id <id>`.
+- **Rotate compromised keys** immediately in the SalesBlink web UI at <https://run.salesblink.io/account/integration/api>.
 
 ## Scope
 
