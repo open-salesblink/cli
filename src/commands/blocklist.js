@@ -12,10 +12,10 @@ export function registerBlocklistCommand(program) {
   cmd.command("list")
     .description("List blocked emails and domains")
     .usage("[--limit <n>] [--skip <n>] [--search <q>] [--type <email|domain>]")
-    .option("--limit <n>", "Page size", parseInt)
-    .option("--skip <n>", "Offset", parseInt)
+    .option("--limit <n>", "Page size (values above 100 are capped at 100)", parseInt)
+    .option("--skip <n>", "Offset; must be a multiple of --limit (non-multiples are rejected with a 400 error)", parseInt)
     .option("--search <q>", "Search query")
-    .option("--type <type>", "Filter by type: email or domain")
+    .option("--type <type>", "Filter by entry type: email or domain")
     .action(async (opts) => {
       const client = makeClient(program);
       const data = await client.request({

@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { basename } from "node:path";
 import { readConfig } from "./config.js";
 
 const DEFAULT_BASE_URL = "https://run.salesblink.io/api/public/v1.0.0";
@@ -64,8 +66,6 @@ export class SalesBlinkClient {
     let requestBody;
     const fileList = files ?? (file ? [file] : undefined);
     if (fileList && fileList.length > 0) {
-      const { readFileSync } = await import("node:fs");
-      const { basename } = await import("node:path");
       const form = new FormData();
       for (const f of fileList) {
         const buf = readFileSync(f.path);

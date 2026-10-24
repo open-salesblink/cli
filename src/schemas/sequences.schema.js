@@ -5,6 +5,7 @@ const EmailStepSchema = z
   .object({
     type: z.literal("email"),
     template_id: z.string(),
+    send_as: z.enum(["new", "followup"]).optional(),
   })
   .passthrough();
 

@@ -125,7 +125,7 @@ To view the full API response, append --format json to your command.
     .option("--archived <bool>", "Filter archived (truthy only; false is unreliable)")
     .option("--sort <dir>", "Sort direction by creation date: asc or desc")
     .option("--sequence <id>", "Filter by sequence ID")
-    .option("--status <status>", "Filter by lead status (e.g. not_contacted, contacted, opened, clicked, replied, bounced, unsubscribed)")
+    .option("--status <status>", "Filter by lead status: not_contacted, contacted, opened, clicked, replied, bounced, unsubscribed. Works with or without --sequence; without it, the status matches across all sequences. Omit to return the full list")
     .option("--owned-by <email>", "Filter by owner email")
     .addHelpText("after", `
 Supported filters: search, archived, sort, sequence, status, owned-by. Limit can be up to 500.

@@ -124,15 +124,16 @@ export function registerLeadsCommand(program) {
 
   cmd.command("sequence-leads")
     .description("List leads in a sequence")
-    .usage("--id <id> [--limit <n>] [--skip <n>]")
+    .usage("--id <id> [--limit <n>] [--skip <n>] [--status <status>]")
     .requiredOption("--id <id>", "Sequence ID")
     .option("--limit <n>", "Page size", parseInt)
     .option("--skip <n>", "Offset", parseInt)
+    .option("--status <status>", "Filter by lead status: not_contacted, contacted, opened, clicked, replied, bounced, unsubscribed. not_contacted/contacted are evaluated on the lead's first-outreach task; the rest match engagement on any step of the sequence")
     .action(async (opts) => {
       const client = makeClient(program);
       const data = await client.request({
         path: `/sequences/${opts.id}/leads`,
-        params: { limit: opts.limit, skip: opts.skip },
+        params: { limit: opts.limit, skip: opts.skip, status: opts.status },
       });
       printData(validated(data, LeadActivityResponse), resolveFormat(program));
     });

@@ -189,12 +189,12 @@ salesblink templates archive --id ID --archived true|false
 ### senders
 
 ```
-salesblink senders list [--limit N] [--skip N] [--search Q] [--folder ID] [--filter STRING]
-salesblink senders add --email E [--from-json sender.json]
-salesblink senders add --google     # prints OAuth URL; paste in browser to connect Gmail
-salesblink senders add --outlook    # prints OAuth URL; paste in browser to connect Outlook
-salesblink senders bulk --file senders.csv
-salesblink senders update --id ID --from-json warmup.json
+salesblink senders list [--limit N] [--skip N] [--search Q] [--folder ID] [--filter STRING] [--owned-by EMAIL]
+salesblink senders connect-link
+salesblink senders bulk-connect-link
+salesblink senders add-sender --from-json sender.json
+salesblink senders add-bulk-senders --csv-file senders.csv
+salesblink senders update --id ID [--folder FOLDER-ID] [--from-json warmup.json]
 salesblink senders reconnect --id ID
 salesblink senders health --id ID
 salesblink senders warmup-stats --id ID [--days N]

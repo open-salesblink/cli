@@ -34,8 +34,8 @@ export function registerSendersCommand(program) {
       printData(validated(data, SendersListResponse), resolveFormat(program));
     });
 
-  cmd.command("add")
-    .description("Get the email-sender connection login link")
+  cmd.command("connect-link")
+    .description("Get Sender Connection Link")
     .usage("[options]")
     .addHelpText("after", `
 The public sender endpoint returns a magic login link to the email-sender connection page in the SalesBlink web UI.
@@ -48,8 +48,8 @@ To view the full API response, append --format json to your command.
       printData(data, resolveFormat(program));
     });
 
-  cmd.command("bulk")
-    .description("Get the bulk sender upload login link")
+  cmd.command("bulk-connect-link")
+    .description("Get Bulk Sender Upload Link")
     .usage("[options]")
     .addHelpText("after", `
 The public bulk sender endpoint returns a magic login link to the email-sender connection page in the SalesBlink web UI.
@@ -59,6 +59,85 @@ To view the full API response, append --format json to your command.
     .action(async () => {
       const client = makeClient(program);
       const data = await client.request({ path: "/senders/bulk-connect-link" });
+      printData(data, resolveFormat(program));
+    });
+
+  cmd.command("add-sender")
+    .description("Add a new email sender (SMTP/IMAP) directly")
+    .usage("--from-json <path>")
+    .requiredOption("--from-json <path>", "JSON file with sender details")
+    .addHelpText("after", `
+The public add-sender endpoint allows you to connect an email sender directly using SMTP/IMAP credentials.
+
+JSON file (--from-json) — minimal example (required fields only):
+  {
+    "from_email": "example@domain.com",
+    "password": "smtp_password",
+    "smtp_host": "smtp.domain.com",
+    "smtp_port": 465
+  }
+
+All supported fields:
+
+  Required:  from_email, password, smtp_host, smtp_port
+  Core:      from_name (defaults to "Admin User"), user_name (defaults to from_email)
+  IMAP:      imap_host, imap_port, imap_user_name (defaults to from_email),
+             imap_password (defaults to password)
+  Warmup:    warmup_enabled, auto_ramp_up_enabled, total_warmup_per_day,
+             ramp_up_frequency, max_daily_frequency, starting_warmup_frequency,
+             warmup_tag, inbox_path, spam_path, pause_cold_emails_when_health_low,
+             pause_cold_emails_health_threshold
+  Sequence:  sequence_auto_ramp_up_enabled, sequence_initial_daily_frequency,
+             sequence_ramp_up_frequency, sequence_max_daily_frequency
+  Other:     signature_id, custom_tracking_url, dkim_identifier, reply_to_email
+
+Omit imap_host for an SMTP-only sender (no inbox, replies or warmup). With IMAP,
+inbox monitoring is always on. The sender connects in the background; check
+"salesblink senders list" for sendingEnabled: true before using it.
+
+To view the full API response, append --format json to your command.
+`)
+    .action(async (opts) => {
+      const client = makeClient(program);
+      const raw = loadJson(opts.fromJson);
+      const data = await client.request({ method: "POST", path: "/senders/add-sender", body: raw });
+      printData(data, resolveFormat(program));
+    });
+
+  cmd.command("add-bulk-senders")
+    .description("Upload a CSV file containing multiple email senders")
+    .usage("--csv-file <path>")
+    .requiredOption("--csv-file <path>", "Path to the CSV file")
+    .addHelpText("after", `
+The public add-bulk-senders endpoint allows you to upload a CSV file to connect multiple senders.
+Existing senders (matched by from_email) are updated; new senders are created.
+Rows matching a Gmail/Outlook OAuth sender are skipped. Leave imap_host empty
+for SMTP-only rows; inbox monitoring is only enabled when inbox_enable is true.
+
+CSV columns:
+
+  Required:  from_email, password, smtp_host, smtp_port
+  Core:      from_name, user_name
+  IMAP:      imap_host, imap_port, imap_user_name, imap_password
+  Warmup:    warmup_enabled, warmup_auto_ramp_up_enabled,
+             warmup_initial_daily_frequency, warmup_ramp_up_frequency,
+             warmup_max_daily_frequency, warmup_tag, inbox_enable,
+             inbox_path, spam_path, pause_cold_emails_when_health_low,
+             pause_cold_emails_health_threshold
+  Sequence:  sequence_auto_ramp_up_enabled, sequence_initial_daily_frequency,
+             sequence_ramp_up_frequency, sequence_max_daily_frequency
+             (or max_emails_per_day)
+  Other:     signature_id, custom_tracking_url, dkim_identifier, reply_to_email
+
+To view the full API response, append --format json to your command.
+`)
+    .action(async (opts) => {
+      const client = makeClient(program);
+      const data = await client.request({ 
+        method: "POST", 
+        path: "/senders/add-bulk-senders", 
+        files: [{ field: "csvFile", path: opts.csvFile }]
+      });
       printData(data, resolveFormat(program));
     });
 
